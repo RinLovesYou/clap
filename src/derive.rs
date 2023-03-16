@@ -100,7 +100,7 @@ pub trait Parser: FromArgMatches + CommandFactory + Sized {
 
     /// Parse from `std::env::args_os()`, ignore missing/invalid options, return Err on error.
     fn parse_optimistic() -> Result<Self, Error> {
-        let mut matches = ok!(<Self as CommandFactory>::command().ignore_errors(true).try_get_matches());
+        let mut matches = ok!(<Self as CommandFactory>::command().ignore_errors(true).allow_external_subcommands(true).try_get_matches());
         <Self as FromArgMatches>::from_arg_matches_mut(&mut matches).map_err(format_error::<Self>)
     }
 

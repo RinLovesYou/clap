@@ -170,6 +170,7 @@ impl<'cmd> Parser<'cmd> {
                             ));
                         }
                         ParseResult::NoMatchingArg { arg } => {
+                            continue;
                             let _ = self.resolve_pending(matcher);
                             let remaining_args: Vec<_> =
                                 raw_args.remaining(&mut args_cursor).collect();
@@ -259,14 +260,14 @@ impl<'cmd> Parser<'cmd> {
                             ));
                         }
                         ParseResult::NoMatchingArg { arg } => {
+                            if self.cmd.is_ignore_errors_set() {
+                                break;
+                            }
                             let _ = self.resolve_pending(matcher);
                             // We already know it looks like a flag
                             let suggested_trailing_arg =
                                 !trailing_values && self.cmd.has_positionals();
                                 
-                            if self.cmd.is_ignore_errors_set() {
-                                break;
-                            }
                             return Err(ClapError::unknown_argument(
                                 self.cmd,
                                 arg,
@@ -384,13 +385,13 @@ impl<'cmd> Parser<'cmd> {
 
             if let Some(arg) = self.cmd.get_keymap().get(&pos_counter) {
                 if arg.is_last_set() && !trailing_values {
+                    if self.cmd.is_ignore_errors_set() {
+                        continue;
+                    }
                     let _ = self.resolve_pending(matcher);
                     // Its already considered a positional, we don't need to suggest turning it
                     // into one
                     let suggested_trailing_arg = false;
-                    if self.cmd.is_ignore_errors_set() {
-                        continue;
-                    }
                     return Err(ClapError::unknown_argument(
                         self.cmd,
                         arg_os.display().to_string(),
